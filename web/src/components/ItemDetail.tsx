@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   LineChart,
   Line,
@@ -20,15 +20,25 @@ import './ItemDetail.css';
 
 type TimeRange = '1h' | '6h' | '24h' | '7d' | '30d';
 
+interface SearchState {
+  query: string;
+  results: any[];
+  membersOnly: boolean | null;
+}
+
 const ItemDetail: React.FC = () => {
   const { itemId } = useParams<{ itemId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [item, setItem] = useState<Item | null>(null);
   const [currentPrice, setCurrentPrice] = useState<ItemPriceResponse | null>(null);
   const [priceHistory, setPriceHistory] = useState<PriceHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
+
+  // Get search state from navigation, if available
+  const searchState = location.state as SearchState | null;
 
   useEffect(() => {
     const fetchItemData = async () => {
@@ -178,12 +188,30 @@ const ItemDetail: React.FC = () => {
     );
   }
 
+  const handleBackToSearch = () => {
+    if (searchState) {
+      // Restore search state when navigating back, including query in URL
+      const params = new URLSearchParams();
+      if (searchState.query.trim()) {
+        params.set('q', searchState.query.trim());
+      }
+      const url = params.toString() ? `/?${params.toString()}` : '/';
+      navigate(url, {
+        state: searchState,
+        replace: false,
+      });
+    } else {
+      // Fallback to regular navigation
+      navigate('/');
+    }
+  };
+
   if (error || !item) {
     return (
       <div className="item-detail-container">
         <div className="error-container">
           <p className="error-text">Error: {error || 'Item not found'}</p>
-          <button onClick={() => navigate('/')} className="back-button">
+          <button onClick={handleBackToSearch} className="back-button">
             Back to Search
           </button>
         </div>
@@ -193,7 +221,7 @@ const ItemDetail: React.FC = () => {
 
   return (
     <div className="item-detail-container">
-      <button onClick={() => navigate('/')} className="back-button">
+      <button onClick={handleBackToSearch} className="back-button">
         ← Back to Search
       </button>
 
