@@ -161,15 +161,63 @@ async def search_items(
     # Execute query
     try:
         result = db.execute(sql, params)
-        rows = result.fetchall()
+        vector_rows = result.fetchall()
         
         # Normalize query for keyword matching (lowercase, split into words)
         query_lower = search_query.query.lower()
         query_words = set(word for word in query_lower.split() if len(word) > 1)
         
+        # Also do a keyword-based search to ensure exact/near-exact matches are found
+        # This is a fallback for cases where vector similarity doesn't rank exact matches highly
+        keyword_rows = []
+        if query_words:
+            # Build keyword search: find items where name contains all query words
+            keyword_where_clauses = ["embedding IS NOT NULL"]
+            keyword_params = {}
+            
+            # Add ILIKE conditions for each query word (case-insensitive)
+            for i, word in enumerate(query_words):
+                keyword_where_clauses.append(f"name ILIKE :keyword_{i}")
+                keyword_params[f"keyword_{i}"] = f"%{word}%"
+            
+            if search_query.members_only is not None:
+                keyword_where_clauses.append("members = :members_only")
+                keyword_params["members_only"] = search_query.members_only
+            
+            keyword_where = " AND ".join(keyword_where_clauses)
+            
+            # Get keyword matches (limit to reasonable number to avoid performance issues)
+            keyword_sql = text(f"""
+                SELECT item_id, name, examine, members, lowalch, highalch, "limit", value, icon,
+                       created_at, updated_at,
+                       1 - (embedding <=> '{embedding_str}'::vector) as similarity
+                FROM game_items
+                WHERE {keyword_where}
+                LIMIT 50
+            """)
+            
+            keyword_result = db.execute(keyword_sql, keyword_params)
+            keyword_rows = keyword_result.fetchall()
+        
+        # Combine vector and keyword results, deduplicate by item_id
+        seen_item_ids = set()
+        all_rows = []
+        
+        # Add vector results first
+        for row in vector_rows:
+            if row.item_id not in seen_item_ids:
+                all_rows.append(row)
+                seen_item_ids.add(row.item_id)
+        
+        # Add keyword results that weren't already included
+        for row in keyword_rows:
+            if row.item_id not in seen_item_ids:
+                all_rows.append(row)
+                seen_item_ids.add(row.item_id)
+        
         # Calculate combined scores with keyword boost
         scored_results = []
-        for row in rows:
+        for row in all_rows:
             semantic_similarity = float(row.similarity)
             
             # Calculate keyword match score
