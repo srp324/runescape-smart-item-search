@@ -14,7 +14,7 @@ const SearchScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [membersOnly, setMembersOnly] = useState<boolean | null>(null);
 
-  const performSearch = useCallback(async (searchQuery: string) => {
+  const performSearch = useCallback(async (searchQuery: string, filterValue?: boolean | null) => {
     if (!searchQuery.trim()) {
       setResults([]);
       return;
@@ -27,7 +27,7 @@ const SearchScreen: React.FC = () => {
       const response = await apiClient.searchItems({
         query: searchQuery,
         limit: 20,
-        members_only: membersOnly ?? undefined,
+        members_only: (filterValue !== undefined ? filterValue : membersOnly) ?? undefined,
       });
 
       setResults(response.results);
@@ -83,7 +83,7 @@ const SearchScreen: React.FC = () => {
           className={`filter-chip ${membersOnly === null ? 'active' : ''}`}
           onClick={() => {
             setMembersOnly(null);
-            if (query) performSearch(query);
+            if (query) performSearch(query, null);
           }}
         >
           All Items
@@ -93,7 +93,7 @@ const SearchScreen: React.FC = () => {
           className={`filter-chip ${membersOnly === true ? 'active' : ''}`}
           onClick={() => {
             setMembersOnly(true);
-            if (query) performSearch(query);
+            if (query) performSearch(query, true);
           }}
         >
           Members Only
@@ -103,7 +103,7 @@ const SearchScreen: React.FC = () => {
           className={`filter-chip ${membersOnly === false ? 'active' : ''}`}
           onClick={() => {
             setMembersOnly(false);
-            if (query) performSearch(query);
+            if (query) performSearch(query, false);
           }}
         >
           Free-to-Play
