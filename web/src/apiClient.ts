@@ -38,6 +38,22 @@ export interface SearchRequest {
   members_only?: boolean;
 }
 
+export interface PriceHistory {
+  id: number;
+  item_id: number;
+  high_price: number | null;
+  low_price: number | null;
+  timestamp: string;
+}
+
+export interface ItemPriceResponse {
+  item_id: number;
+  name: string;
+  high_price: number | null;
+  low_price: number | null;
+  timestamp: string;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -116,21 +132,15 @@ class ApiClient {
   /**
    * Get price history for an item.
    */
-  async getItemPriceHistory(itemId: number, limit: number = 100): Promise<any[]> {
-    return this.fetch<any[]>(`/api/items/${itemId}/prices?limit=${limit}`);
+  async getItemPriceHistory(itemId: number, limit: number = 1000): Promise<PriceHistory[]> {
+    return this.fetch<PriceHistory[]>(`/api/items/${itemId}/prices?limit=${limit}`);
   }
 
   /**
    * Get current price for an item.
    */
-  async getCurrentItemPrice(itemId: number): Promise<{
-    item_id: number;
-    name: string;
-    high_price: number | null;
-    low_price: number | null;
-    timestamp: string;
-  }> {
-    return this.fetch(`/api/items/${itemId}/price/current`);
+  async getCurrentItemPrice(itemId: number): Promise<ItemPriceResponse> {
+    return this.fetch<ItemPriceResponse>(`/api/items/${itemId}/price/current`);
   }
 
   /**
