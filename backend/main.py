@@ -16,7 +16,7 @@ from schemas import (
     ItemResponse, ItemCreate, SearchQuery, SearchResponse, SearchResult,
     BatchItemCreate, BatchItemResponse, PriceHistoryResponse, ItemPriceResponse
 )
-from embeddings import get_embedding_service, create_searchable_text
+from embeddings import get_embedding_service, create_searchable_text, format_query_for_embedding
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -25,7 +25,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware for React Native and Web
+# CORS middleware for web application
 # Support environment variable for CORS origins (comma-separated)
 cors_origins_env = os.getenv("CORS_ORIGINS", "")
 if cors_origins_env:
@@ -110,7 +110,7 @@ async def search_items(
     db: Session = Depends(get_db)
 ):
     """
-    Search items using vector similarity.
+    Search items using hybrid vector similarity and keyword matching.
     
     - **query**: Natural language search query (e.g., "dragon longsword")
     - **limit**: Maximum number of results to return (1-100)
@@ -118,9 +118,12 @@ async def search_items(
     """
     embedding_service = get_embedding_service()
     
+    # Format query to match item embedding format for better semantic similarity
+    formatted_query = format_query_for_embedding(search_query.query)
+    
     # Generate embedding for query
     try:
-        query_embedding = embedding_service.embed_text(search_query.query)
+        query_embedding = embedding_service.embed_text(formatted_query)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate embedding: {str(e)}")
     
@@ -138,6 +141,8 @@ async def search_items(
     # Note: "limit" is a reserved keyword in PostgreSQL, so we need to quote it
     # Use string formatting for the vector embedding and LIMIT to avoid parameter binding issues
     # The embedding is already validated as a list of floats, so it's safe
+    # Increase limit to get more candidates for re-ranking
+    candidate_limit = min(search_query.limit * 3, 100)
     sql = text(f"""
         SELECT item_id, name, examine, members, lowalch, highalch, "limit", value, icon,
                created_at, updated_at,
@@ -145,7 +150,7 @@ async def search_items(
         FROM game_items
         WHERE {where_clause}
         ORDER BY embedding <=> '{embedding_str}'::vector
-        LIMIT {search_query.limit}
+        LIMIT {candidate_limit}
     """)
     
     # Build params dict for any other parameters
@@ -158,9 +163,44 @@ async def search_items(
         result = db.execute(sql, params)
         rows = result.fetchall()
         
-        # Convert to response format
-        results = []
+        # Normalize query for keyword matching (lowercase, split into words)
+        query_lower = search_query.query.lower()
+        query_words = set(word for word in query_lower.split() if len(word) > 1)
+        
+        # Calculate combined scores with keyword boost
+        scored_results = []
         for row in rows:
+            semantic_similarity = float(row.similarity)
+            
+            # Calculate keyword match score
+            name_lower = row.name.lower()
+            # Count how many query words appear in the item name
+            matching_words = sum(1 for word in query_words if word in name_lower)
+            # Also check if the query is a substring of the name (for "dragon long" -> "dragon longsword")
+            query_in_name = query_lower in name_lower
+            name_in_query = name_lower in query_lower
+            
+            # Calculate keyword score (0.0 to 1.0)
+            if query_in_name or name_in_query:
+                # Exact or substring match gets high boost
+                keyword_score = 0.5
+            elif matching_words > 0:
+                # Partial word match gets proportional boost
+                keyword_score = 0.2 * (matching_words / len(query_words))
+            else:
+                keyword_score = 0.0
+            
+            # Combine semantic similarity (0.0 to 1.0) with keyword boost
+            # Weight: 70% semantic, 30% keyword (but keyword can boost significantly)
+            combined_score = semantic_similarity * 0.7 + keyword_score * 0.3
+            
+            # Additional boost for exact/close matches
+            if query_in_name:
+                combined_score = min(1.0, combined_score + 0.15)
+            elif matching_words == len(query_words) and len(query_words) > 0:
+                # All query words match
+                combined_score = min(1.0, combined_score + 0.1)
+            
             item = ItemResponse(
                 item_id=row.item_id,
                 name=row.name,
@@ -174,7 +214,11 @@ async def search_items(
                 created_at=row.created_at,
                 updated_at=row.updated_at
             )
-            results.append(SearchResult(item=item, similarity=float(row.similarity)))
+            scored_results.append((combined_score, SearchResult(item=item, similarity=combined_score)))
+        
+        # Sort by combined score (descending) and take top results
+        scored_results.sort(key=lambda x: x[0], reverse=True)
+        results = [result for _, result in scored_results[:search_query.limit]]
         
         return SearchResponse(
             results=results,

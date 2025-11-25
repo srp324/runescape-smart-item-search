@@ -123,3 +123,43 @@ def create_searchable_text(item_data: dict) -> str:
     
     return " | ".join(parts) if parts else ""
 
+
+def format_query_for_embedding(query: str) -> str:
+    """
+    Format a user query to match the item embedding format.
+    This ensures better semantic similarity between queries and items.
+    
+    Items are embedded as: "Item Name: {name} | Description: {examine}"
+    This function formats queries to match that structure.
+    
+    Args:
+        query: User's search query (e.g., "dragon long", "Item Name: dragon long", "Description: a sword")
+        
+    Returns:
+        Formatted query string matching item embedding format
+        - "Description: {text}" if query starts with "Description:"
+        - "Item Name: {text}" if query starts with "Item Name:" or is a plain query
+    """
+    cleaned_query = query.strip()
+    
+    # If user explicitly searches by description, preserve that format
+    if cleaned_query.lower().startswith("description:"):
+        # Extract the text after "Description:"
+        description_text = cleaned_query[12:].strip()  # Remove "Description:" (12 chars)
+        if description_text:
+            return f"Description: {description_text}"
+        # If empty after prefix, treat as name search
+        return "Item Name: "
+    
+    # If user explicitly searches by item name, preserve that format
+    if cleaned_query.lower().startswith("item name:"):
+        # Extract the text after "Item Name:"
+        name_text = cleaned_query[10:].strip()  # Remove "Item Name:" (10 chars)
+        if name_text:
+            return f"Item Name: {name_text}"
+        # If empty after prefix, return as-is
+        return "Item Name: "
+    
+    # Default: treat plain queries as item name searches
+    # Format query to match item embedding format: "Item Name: {query}"
+    return f"Item Name: {cleaned_query}"
