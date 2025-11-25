@@ -2,7 +2,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
-  background-color: #f5f5f5;
+  background-color: #1a1a1a;
   min-height: 100vh;
 }
 
@@ -13,13 +13,13 @@
 
 .search-header h1 {
   font-size: 2.5rem;
-  color: #333;
+  color: #fff;
   margin-bottom: 8px;
 }
 
 .subtitle {
   font-size: 1.1rem;
-  color: #666;
+  color: #999;
 }
 
 .search-input-container {
@@ -32,9 +32,10 @@
   flex: 1;
   padding: 14px 16px;
   font-size: 16px;
-  border: 1px solid #ddd;
+  border: 1px solid #444;
   border-radius: 8px;
-  background-color: #fff;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
   transition: border-color 0.2s;
 }
 
@@ -76,9 +77,10 @@
 .filter-chip {
   padding: 10px 20px;
   font-size: 14px;
-  border: 1px solid #ddd;
+  border: 1px solid #444;
   border-radius: 20px;
-  background-color: #fff;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -95,14 +97,15 @@
 }
 
 .error-container {
-  background-color: #ffebee;
+  background-color: #3a1f1f;
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 24px;
+  border: 1px solid #5a2a2a;
 }
 
 .error-text {
-  color: #c62828;
+  color: #f44336;
   font-size: 14px;
   margin: 0;
 }
@@ -113,7 +116,7 @@
 
 .result-count {
   font-size: 14px;
-  color: #666;
+  color: #999;
   margin-bottom: 16px;
 }
 
@@ -123,15 +126,17 @@
 }
 
 .item-card {
-  background-color: #fff;
+  background-color: #242424;
   border-radius: 8px;
   padding: 20px;
-  border: 1px solid #e0e0e0;
-  transition: box-shadow 0.2s;
+  border: 1px solid #333;
+  transition: all 0.2s;
 }
 
 .item-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+  border-color: #007AFF;
+  transform: translateY(-2px);
 }
 
 .item-header {
@@ -151,7 +156,7 @@
 .item-name {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
+  color: #fff;
   margin: 0;
 }
 
@@ -172,7 +177,7 @@
 
 .item-description {
   font-size: 14px;
-  color: #666;
+  color: #bbb;
   margin-bottom: 16px;
   line-height: 1.5;
 }
@@ -185,7 +190,7 @@
 
 .meta-text {
   font-size: 13px;
-  color: #888;
+  color: #999;
 }
 
 .empty-container {
@@ -195,13 +200,13 @@
 
 .empty-text {
   font-size: 18px;
-  color: #666;
+  color: #999;
   margin-bottom: 8px;
 }
 
 .empty-subtext {
   font-size: 14px;
-  color: #999;
+  color: #777;
 }
 
 @media (max-width: 768px) {

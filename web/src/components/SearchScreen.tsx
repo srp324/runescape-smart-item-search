@@ -4,10 +4,12 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiClient, SearchResult } from '../apiClient';
 import './SearchScreen.css';
 
 const SearchScreen: React.FC = () => {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -123,7 +125,12 @@ const SearchScreen: React.FC = () => {
           </p>
           <div className="results-list">
             {results.map((result) => (
-              <div key={result.item.item_id} className="item-card">
+              <div
+                key={result.item.item_id}
+                className="item-card"
+                onClick={() => navigate(`/item/${result.item.item_id}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="item-header">
                   <div className="item-name-container">
                     <h3 className="item-name">{result.item.name}</h3>
