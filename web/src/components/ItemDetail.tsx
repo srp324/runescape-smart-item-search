@@ -239,16 +239,6 @@ const ItemDetail: React.FC = () => {
           >
             Wiki
           </a>
-          <a
-            href={`https://www.osrsbox.com/tools/item-database/#${item.item_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="action-link"
-          >
-            GEDB
-          </a>
-          <button className="action-icon" title="Bookmark">🔖</button>
-          <button className="action-icon" title="Favorite">❤️</button>
         </div>
       </div>
 
