@@ -3,18 +3,51 @@
  * Desktop version of the search screen.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { apiClient, SearchResult } from '../apiClient';
 import './SearchScreen.css';
 
+interface SearchState {
+  query: string;
+  results: SearchResult[];
+  membersOnly: boolean | null;
+}
+
 const SearchScreen: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [membersOnly, setMembersOnly] = useState<boolean | null>(null);
+  const hasInitializedRef = useRef(false);
 
-  const performSearch = useCallback(async (searchQuery: string) => {
+  // Restore state from location state or URL query parameters
+  useEffect(() => {
+    const state = location.state as SearchState | null;
+    const searchParams = new URLSearchParams(location.search);
+    const queryParam = searchParams.get('q');
+
+    // Priority: location state > URL query parameter
+    if (state && state.query) {
+      // Restore from navigation state (coming back from item detail)
+      setQuery(state.query);
+      setResults(state.results || []);
+      setMembersOnly(state.membersOnly ?? null);
+      hasInitializedRef.current = true;
+    } else if (queryParam && !hasInitializedRef.current) {
+      // If we have a query in URL but no state, restore query and auto-search
+      // (e.g., from bookmark or page refresh) - but only on initial load
+      setQuery(queryParam);
+      performSearch(queryParam, membersOnly);
+      hasInitializedRef.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location]);
+
+  const performSearch = useCallback(async (searchQuery: string, filterValue?: boolean | null) => {
     if (!searchQuery.trim()) {
       setResults([]);
       return;
@@ -27,7 +60,7 @@ const SearchScreen: React.FC = () => {
       const response = await apiClient.searchItems({
         query: searchQuery,
         limit: 20,
-        members_only: membersOnly ?? undefined,
+        members_only: (filterValue !== undefined ? filterValue : membersOnly) ?? undefined,
       });
 
       setResults(response.results);
@@ -40,8 +73,14 @@ const SearchScreen: React.FC = () => {
   }, [membersOnly]);
 
   const handleSearch = useCallback(() => {
+    // Update URL with query parameter when searching
+    const params = new URLSearchParams();
+    if (query.trim()) {
+      params.set('q', query.trim());
+    }
+    navigate(`/?${params.toString()}`, { replace: true });
     performSearch(query);
-  }, [query, performSearch]);
+  }, [query, performSearch, navigate]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -82,8 +121,15 @@ const SearchScreen: React.FC = () => {
         <button
           className={`filter-chip ${membersOnly === null ? 'active' : ''}`}
           onClick={() => {
-            setMembersOnly(null);
-            if (query) performSearch(query);
+            const newFilter = null;
+            setMembersOnly(newFilter);
+            if (query) {
+              // Update URL when filtering
+              const params = new URLSearchParams();
+              params.set('q', query.trim());
+              navigate(`/?${params.toString()}`, { replace: true });
+              performSearch(query, newFilter);
+            }
           }}
         >
           All Items
@@ -92,8 +138,15 @@ const SearchScreen: React.FC = () => {
         <button
           className={`filter-chip ${membersOnly === true ? 'active' : ''}`}
           onClick={() => {
-            setMembersOnly(true);
-            if (query) performSearch(query);
+            const newFilter = true;
+            setMembersOnly(newFilter);
+            if (query) {
+              // Update URL when filtering
+              const params = new URLSearchParams();
+              params.set('q', query.trim());
+              navigate(`/?${params.toString()}`, { replace: true });
+              performSearch(query, newFilter);
+            }
           }}
         >
           Members Only
@@ -102,8 +155,15 @@ const SearchScreen: React.FC = () => {
         <button
           className={`filter-chip ${membersOnly === false ? 'active' : ''}`}
           onClick={() => {
-            setMembersOnly(false);
-            if (query) performSearch(query);
+            const newFilter = false;
+            setMembersOnly(newFilter);
+            if (query) {
+              // Update URL when filtering
+              const params = new URLSearchParams();
+              params.set('q', query.trim());
+              navigate(`/?${params.toString()}`, { replace: true });
+              performSearch(query, newFilter);
+            }
           }}
         >
           Free-to-Play
@@ -123,7 +183,18 @@ const SearchScreen: React.FC = () => {
           </p>
           <div className="results-list">
             {results.map((result) => (
-              <div key={result.item.item_id} className="item-card">
+              <div
+                key={result.item.item_id}
+                className="item-card"
+                onClick={() => navigate(`/item/${result.item.item_id}`, {
+                  state: {
+                    query,
+                    results,
+                    membersOnly,
+                  } as SearchState
+                })}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="item-header">
                   <div className="item-name-container">
                     <h3 className="item-name">{result.item.name}</h3>

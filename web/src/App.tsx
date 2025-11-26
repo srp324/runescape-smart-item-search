@@ -1,12 +1,18 @@
-import React from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import SearchScreen from './components/SearchScreen'
+import ItemDetail from './components/ItemDetail'
 import './App.css'
 
 function App() {
   return (
-    <div className="App">
-      <SearchScreen />
-    </div>
+    <BrowserRouter>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<SearchScreen />} />
+          <Route path="/item/:itemId" element={<ItemDetail />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   )
 }
 

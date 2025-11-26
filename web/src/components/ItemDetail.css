@@ -1,0 +1,305 @@
+.item-detail-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  background-color: #1a1a1a;
+  min-height: 100vh;
+  color: #e0e0e0;
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.error-text {
+  color: #f44336;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.back-button {
+  background-color: #007AFF;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 24px;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #0056b3;
+}
+
+.item-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #333;
+}
+
+.item-title-section {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.item-name {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.item-id {
+  font-size: 1rem;
+  color: #999;
+  font-weight: 400;
+}
+
+.item-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.action-link {
+  color: #007AFF;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.action-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.action-icon {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s;
+}
+
+.action-icon:hover {
+  transform: scale(1.1);
+}
+
+.item-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.item-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.info-column {
+  background-color: #242424;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #333;
+}
+
+.column-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #333;
+}
+
+.time-range-selector {
+  margin-bottom: 16px;
+}
+
+.time-select {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.time-select:focus {
+  outline: none;
+  border-color: #007AFF;
+}
+
+.price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.price-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.price-label {
+  font-size: 13px;
+  color: #999;
+}
+
+.price-value {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.price-timestamp {
+  font-size: 12px;
+  color: #999;
+}
+
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #999;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.stat-value.volume {
+  color: #4caf50;
+}
+
+.stat-note {
+  font-size: 11px;
+  color: #777;
+  font-style: italic;
+}
+
+.details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 13px;
+  color: #999;
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: #fff;
+}
+
+.detail-value.examine {
+  font-style: italic;
+  color: #bbb;
+}
+
+.alch-diff {
+  color: #999;
+  font-size: 0.9em;
+}
+
+.charts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.chart-container {
+  background-color: #242424;
+  border-radius: 8px;
+  padding: 24px;
+  border: 1px solid #333;
+}
+
+.chart-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.chart-instruction {
+  font-size: 13px;
+  color: #999;
+  margin: 0 0 16px 0;
+}
+
+.no-data-message {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+
+/* Chart styling overrides for dark theme */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #444;
+}
+
+@media (max-width: 1024px) {
+  .item-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .item-detail-container {
+    padding: 16px;
+  }
+
+  .item-detail-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .item-name {
+    font-size: 1.5rem;
+  }
+
+  .item-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

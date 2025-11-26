@@ -1,0 +1,29 @@
+graph LR
+    subgraph "Data Ingestion"
+        ID[Item Data<br/>name, examine, members]
+        TP[Text Processing<br/>Format searchable text]
+        EG[Embedding Generation<br/>SentenceTransformer<br/>384-dim vectors]
+        VS[Vector Storage<br/>PostgreSQL + pgvector]
+        
+        ID --> TP
+        TP --> EG
+        EG --> VS
+    end
+    
+    subgraph "Search Flow"
+        UQ[User Query]
+        QE[Query Embedding<br/>384-dim vector]
+        VS2[Vector Similarity Search<br/>Cosine distance]
+        RES[Search Results<br/>Ranked by similarity]
+        
+        UQ --> QE
+        QE --> VS2
+        VS -->|compare| VS2
+        VS2 --> RES
+    end
+    
+    style EG fill:#e1f5ff,color:#000000
+    style VS fill:#fff4e1,color:#000000
+    style VS2 fill:#f3e5f5,color:#000000
+    style QE fill:#f3e5f5,color:#000000
+

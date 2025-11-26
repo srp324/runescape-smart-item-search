@@ -9,7 +9,9 @@ psycopg2-binary>=2.9.9
 pgvector>=0.2.3
 
 # Embedding models
-sentence-transformers>=2.2.2
+# Qwen3-Embedding requires sentence-transformers>=2.7.0 and transformers>=4.51.0
+sentence-transformers>=2.7.0
+transformers>=4.51.0
 # Alternative: openai>=1.0.0 (if using OpenAI embeddings)
 
 # Utilities
