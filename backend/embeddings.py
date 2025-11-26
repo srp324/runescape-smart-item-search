@@ -14,25 +14,73 @@ class EmbeddingService:
     Can be easily extended to support OpenAI or other providers.
     """
     
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+    def __init__(self, model_name: str = "Qwen/Qwen3-Embedding-0.6B"):
         """
         Initialize the embedding service.
         
         Args:
             model_name: Name of the sentence-transformers model to use
+                - 'Qwen/Qwen3-Embedding-0.6B': 1024 dimensions, state-of-the-art quality
                 - 'all-MiniLM-L6-v2': 384 dimensions, fast, good quality
                 - 'all-mpnet-base-v2': 768 dimensions, slower, better quality
         """
         self.model_name = model_name
         self.model: Optional[SentenceTransformer] = None
-        self.dimension = 384 if "MiniLM" in model_name else 768
+        # Auto-detect dimension from model after loading, or use known defaults
+        self.dimension = self._get_model_dimension(model_name)
         self._load_model()
+    
+    def _get_model_dimension(self, model_name: str) -> int:
+        """
+        Get the embedding dimension for a given model.
+        
+        Args:
+            model_name: Name of the model
+            
+        Returns:
+            Dimension of the embedding vector
+        """
+        # Known model dimensions
+        dimension_map = {
+            "Qwen/Qwen3-Embedding-0.6B": 1024,
+            "Qwen/Qwen3-Embedding-4B": 2560,
+            "Qwen/Qwen3-Embedding-8B": 4096,
+            "all-MiniLM-L6-v2": 384,
+            "all-MiniLM-L12-v2": 384,
+            "all-mpnet-base-v2": 768,
+        }
+        
+        # Check for exact match first
+        if model_name in dimension_map:
+            return dimension_map[model_name]
+        
+        # Check for partial matches
+        if "Qwen3" in model_name or "Qwen" in model_name:
+            if "0.6B" in model_name:
+                return 1024
+            elif "4B" in model_name:
+                return 2560
+            elif "8B" in model_name:
+                return 4096
+        elif "MiniLM" in model_name:
+            return 384
+        elif "mpnet" in model_name:
+            return 768
+        
+        # Default fallback - will be updated after model loads
+        return 1024
     
     def _load_model(self):
         """Load the embedding model."""
         try:
             print(f"Loading embedding model: {self.model_name}")
             self.model = SentenceTransformer(self.model_name)
+            # Auto-detect actual dimension from the model if available
+            if hasattr(self.model, 'get_sentence_embedding_dimension'):
+                actual_dim = self.model.get_sentence_embedding_dimension()
+                if actual_dim != self.dimension:
+                    print(f"Model reports dimension {actual_dim}, updating from {self.dimension}")
+                    self.dimension = actual_dim
             print(f"Model loaded successfully. Dimension: {self.dimension}")
         except Exception as e:
             raise RuntimeError(f"Failed to load embedding model: {e}")
@@ -92,7 +140,7 @@ def get_embedding_service() -> EmbeddingService:
     """
     global _embedding_service
     if _embedding_service is None:
-        model_name = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+        model_name = os.getenv("EMBEDDING_MODEL", "Qwen/Qwen3-Embedding-0.6B")
         _embedding_service = EmbeddingService(model_name=model_name)
     return _embedding_service
 
