@@ -154,9 +154,14 @@ def update_items_and_prices():
             # Check if embedding is needed
             needs_embedding = False
             if not existing_item:
+                # New item needs embedding
+                needs_embedding = True
+            elif existing_item.embedding is None:
+                # Existing item has no embedding (e.g., after dimension migration)
                 needs_embedding = True
             elif (existing_item.name != item_dict["name"] or 
                   existing_item.examine != item_dict["examine"]):
+                # Item text changed, regenerate embedding
                 needs_embedding = True
             
             if needs_embedding:
