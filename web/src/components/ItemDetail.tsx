@@ -107,10 +107,8 @@ const ItemDetail: React.FC = () => {
   const stats = useMemo(() => {
     if (!currentPrice || !chartData.length) {
       return {
-        dailyVolume: null,
         margin: null,
         potentialProfit: null,
-        marginVolume: null,
         roi: null,
       };
     }
@@ -120,20 +118,13 @@ const ItemDetail: React.FC = () => {
       ? latest.high_price - latest.low_price 
       : null;
     
-    // Estimate daily volume based on price data points (rough approximation)
-    // Since we don't have actual volume data, we'll use a placeholder
-    const dailyVolume = chartData.length * 60; // Rough estimate based on data frequency
-    
     const buyLimit = item?.limit || 0;
     const potentialProfit = margin && buyLimit ? margin * buyLimit : null;
-    const marginVolume = margin && dailyVolume ? margin * dailyVolume : null;
     const roi = margin && latest.low_price ? (margin / latest.low_price) * 100 : null;
 
     return {
-      dailyVolume,
       margin,
       potentialProfit,
-      marginVolume,
       roi,
     };
   }, [currentPrice, chartData, item]);
@@ -239,16 +230,6 @@ const ItemDetail: React.FC = () => {
           >
             Wiki
           </a>
-          <a
-            href={`https://www.osrsbox.com/tools/item-database/#${item.item_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="action-link"
-          >
-            GEDB
-          </a>
-          <button className="action-icon" title="Bookmark">🔖</button>
-          <button className="action-icon" title="Favorite">❤️</button>
         </div>
       </div>
 
@@ -288,23 +269,12 @@ const ItemDetail: React.FC = () => {
             <h3 className="column-title">Market Statistics</h3>
             <div className="stats-grid">
               <div className="stat-item">
-                <span className="stat-label">Daily volume:</span>
-                <span className="stat-value volume">
-                  {formatNumber(stats.dailyVolume)}
-                </span>
-                <span className="stat-note">Based on available price data</span>
-              </div>
-              <div className="stat-item">
                 <span className="stat-label">Margin:</span>
                 <span className="stat-value">{formatNumber(stats.margin)}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">Potential profit:</span>
                 <span className="stat-value">{formatNumber(stats.potentialProfit)}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Margin * volume:</span>
-                <span className="stat-value">{formatNumber(stats.marginVolume)}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">ROI:</span>
