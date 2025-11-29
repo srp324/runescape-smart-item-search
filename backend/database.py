@@ -14,10 +14,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database URL from environment variables
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://user:password@localhost:5432/game_items"
-)
+# Note:
+# - Some platforms (like Railway / Heroku-style URLs) may:
+#   - Define DATABASE_URL but leave it blank, or
+#   - Use the legacy "postgres://" scheme instead of "postgresql://",
+#     which SQLAlchemy cannot load directly ("postgres" dialect is unknown).
+raw_database_url = os.getenv("DATABASE_URL")
+
+if raw_database_url is None or raw_database_url.strip() == "":
+    # Fall back to a safe local default for development
+    DATABASE_URL = "postgresql://user:password@localhost:5432/game_items"
+else:
+    DATABASE_URL = raw_database_url.strip()
+    # Normalize legacy postgres scheme to postgresql for SQLAlchemy
+    # Example: postgres://user:pass@host:port/db -> postgresql://user:pass@host:port/db
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = "postgresql://" + DATABASE_URL[len("postgres://"):]
 
 # Create engine with connection pooling
 engine = create_engine(
