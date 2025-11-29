@@ -11,7 +11,8 @@ if (-not (Test-Path .env)) {
     $randomPassword = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | ForEach-Object {[char]$_})
     @"
 DB_PASSWORD=$randomPassword
-EMBEDDING_MODEL=all-MiniLM-L6-v2
+EMBEDDING_MODEL=Qwen/Qwen3-Embedding-0.6B
+CORS_ORIGINS=*
 "@ | Out-File -FilePath .env -Encoding utf8
     Write-Host "✅ Created .env file with random password" -ForegroundColor Green
     Write-Host "⚠️  Please review and update .env file with your settings" -ForegroundColor Yellow

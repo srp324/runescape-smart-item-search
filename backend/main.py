@@ -10,7 +10,7 @@ from typing import Optional, List
 import os
 import threading
 
-from database import get_db, init_db, check_pgvector_extension
+from database import get_db, init_db, check_pgvector_extension, engine
 from models import Item, PriceHistory
 from schemas import (
     ItemResponse, ItemCreate, SearchQuery, SearchResponse, SearchResult,
@@ -94,11 +94,30 @@ async def health_check(db: Session = Depends(get_db)):
         # Check database connection
         db.execute(text("SELECT 1"))
         pgvector_installed = check_pgvector_extension()
+
+        # Database URL diagnostics (password is hidden)
+        try:
+            effective_url = str(engine.url.render_as_string(hide_password=True))
+        except Exception:
+            effective_url = "unavailable"
+
+        # Check that required tables exist in the connected database
+        game_items_exists = db.execute(
+            text("SELECT to_regclass('public.game_items') IS NOT NULL")
+        ).scalar()
+        price_history_exists = db.execute(
+            text("SELECT to_regclass('public.price_history') IS NOT NULL")
+        ).scalar()
         
         return {
             "status": "healthy",
             "database": "connected",
-            "pgvector": "installed" if pgvector_installed else "not installed"
+            "pgvector": "installed" if pgvector_installed else "not installed",
+            "database_url": effective_url,
+            "tables": {
+                "game_items": bool(game_items_exists),
+                "price_history": bool(price_history_exists),
+            },
         }
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database connection failed: {str(e)}")

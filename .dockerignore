@@ -1,0 +1,8 @@
+# Prevent Railway from scanning backend directory during root-level auto-detection
+backend/
+web/
+documentation/
+*.md
+.git
+.gitignore
+

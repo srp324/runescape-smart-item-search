@@ -2,7 +2,8 @@ services:
   - type: web
     name: runescape-api
     env: python
-    buildCommand: pip install -r backend/requirements.txt
+    plan: free
+    buildCommand: pip install -r requirements.txt
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
@@ -10,13 +11,15 @@ services:
           name: runescape-db
           property: connectionString
       - key: EMBEDDING_MODEL
-        value: all-MiniLM-L6-v2
-      - key: PYTHON_VERSION
-        value: 3.11.0
+        value: Qwen/Qwen3-Embedding-0.6B
+      - key: CORS_ORIGINS
+        sync: false
+    healthCheckPath: /health
 
 databases:
   - name: runescape-db
     databaseName: game_items
     user: game_user
-    plan: starter
+    plan: free
+    postgresMajorVersion: 16
 
