@@ -23,9 +23,10 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+# Health check - Railway handles its own healthchecks via /health endpoint
+# This Docker healthcheck uses a simple port check, Railway will use /health endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
+    CMD sh -c "python -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', int('${PORT:-8000}'))); s.close()\"" || exit 1
 
 # Run the application
 # Railway provides PORT via environment variable
