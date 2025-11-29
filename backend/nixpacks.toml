@@ -7,7 +7,7 @@ nixPkgs = ["python311", "pip"]
 [phases.install]
 cmds = ["pip install --upgrade pip", "pip install -r requirements.txt"]
 
-# Explicitly disable build phase to prevent auto-detection from adding backend/requirements.txt
+# Explicitly prevent build phase - Railway auto-detects backend/requirements.txt from root
 [phases.build]
 cmds = []
 
