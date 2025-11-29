@@ -10,6 +10,14 @@ A semantic search application for Old School RuneScape (OSRS) items using vector
 - **Vector Embeddings**: Uses pgvector for efficient similarity search
 - **Web Interface**: Responsive React web app that works on Windows, macOS, and Linux
 
+## 🛠️ Tech Stack
+
+![Tech Stack](https://skillicons.dev/icons?i=python,fastapi,postgresql,react,vite,ts,nodejs,git)
+
+**Backend:** Python, FastAPI, PostgreSQL (pgvector), SQLAlchemy, sentence-transformers  
+**Frontend:** React, TypeScript, Vite, React Router, Recharts  
+**Tools:** Git
+
 ## 📁 Project Structure
 
 ```
