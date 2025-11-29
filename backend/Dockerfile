@@ -20,16 +20,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Expose port
+# Expose port (Railway will route to PORT env var, but we expose 8000 as metadata)
 EXPOSE 8000
 
 # Health check - Railway handles its own healthchecks via /health endpoint
 # This Docker healthcheck uses a simple port check, Railway will use /health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
-    CMD sh -c "python -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', int('${PORT:-8000}'))); s.close()\"" || exit 1
+    CMD sh -c "python -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', int(os.environ.get('PORT', '8000')))); s.close()\"" || exit 1
 
 # Run the application
-# Railway provides PORT via environment variable
-# Use shell form to ensure PORT variable expansion works
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Railway assigns PORT dynamically (e.g., PORT=3000) and routes HTTP traffic to that port
+# We MUST listen on PORT, not hardcode 8000, or Railway's routing won't work
+# Shell form allows variable expansion: ${PORT:-8000} uses PORT if set, otherwise defaults to 8000
+CMD sh -c "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"
 
