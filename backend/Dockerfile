@@ -8,8 +8,13 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
+# Install CPU-only PyTorch first (much smaller, prevents timeout)
+# This avoids downloading 2GB+ of CUDA packages
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+# Copy requirements and install remaining Python dependencies
 COPY requirements.txt .
+# Install other packages (sentence-transformers will use the CPU PyTorch we just installed)
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
@@ -23,5 +28,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
 # Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Railway provides PORT via environment variable
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
 

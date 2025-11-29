@@ -22,7 +22,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile
     container_name: runescape-api
     environment:
       DATABASE_URL: postgresql://game_user:${DB_PASSWORD:-changeme}@db:5432/game_items
