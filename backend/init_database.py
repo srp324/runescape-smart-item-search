@@ -7,12 +7,17 @@ from sqlalchemy import text
 import sys
 import os
 
-# Add project root to path for script execution
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
+# Ensure we import the same modules that the app uses at runtime
+# (__file__ is .../backend/init_database.py)
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # repo root or /app
+backend_root = os.path.join(project_root, "backend")
 
-from backend.database import engine, Base
-from backend.models import Item, PriceHistory
+# Add backend directory to sys.path so we can import `database` and `models`
+if backend_root not in sys.path:
+    sys.path.insert(0, backend_root)
+
+from database import engine, Base  # shared Base / engine with the app
+from models import Item, PriceHistory  # registers models on that same Base
 
 
 def init_database():
@@ -23,6 +28,13 @@ def init_database():
     3. Create indexes
     """
     print("Initializing database...")
+    # Show which database URL we're actually using (password is hidden by SQLAlchemy)
+    try:
+        from database import DATABASE_URL  # type: ignore
+        print(f"Raw DATABASE_URL from environment: {DATABASE_URL}")
+    except Exception:
+        # Fallback: print engine URL (already sanitized by SQLAlchemy)
+        print(f"Effective SQLAlchemy URL: {engine.url}")
     
     # Enable pgvector extension
     with engine.connect() as conn:
