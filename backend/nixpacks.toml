@@ -1,3 +1,6 @@
+# Railway NIXPACKS configuration for backend directory
+# Root Directory in Railway should be set to "backend"
+
 [providers]
 python = "3.11"
 
@@ -7,7 +10,7 @@ nixPkgs = ["python311", "pip"]
 [phases.install]
 cmds = ["pip install --upgrade pip", "pip install -r requirements.txt"]
 
-# Explicitly prevent build phase - Railway auto-detects backend/requirements.txt from root
+# Disable build phase - Railway should NOT auto-detect backend/requirements.txt
 [phases.build]
 cmds = []
 
