@@ -2,7 +2,7 @@ services:
   - type: web
     name: runescape-api
     env: python
-    plan: starter
+    plan: hobby
     buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -20,6 +20,6 @@ databases:
   - name: runescape-db
     databaseName: game_items
     user: game_user
-    plan: starter
+    plan: hobby
     postgresMajorVersion: 16
 
