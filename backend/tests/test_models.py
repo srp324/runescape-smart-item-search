@@ -120,18 +120,17 @@ class TestItemModel:
         assert isinstance(item.created_at, datetime)
         assert isinstance(item.updated_at, datetime)
     
-    def test_item_name_indexed(self, test_db_session):
-        """Test that item name is indexed for fast lookups."""
-        # This is a structural test - verifies the index is defined in the model
-        from sqlalchemy import inspect
-        inspector = inspect(Item)
-        assert any(col.name == 'name' for col in inspector.columns.values())
+    def test_item_name_indexed(self):
+        """Test that item name column is defined with index=True."""
+        # Check the actual index attribute on the column
+        name_col = Item.__table__.columns['name']
+        assert name_col.index is True
     
-    def test_item_members_indexed(self, test_db_session):
-        """Test that members field is indexed."""
-        from sqlalchemy import inspect
-        inspector = inspect(Item)
-        assert any(col.name == 'members' for col in inspector.columns.values())
+    def test_item_members_indexed(self):
+        """Test that members column is defined with index=True."""
+        # Check the actual index attribute on the column
+        members_col = Item.__table__.columns['members']
+        assert members_col.index is True
 
 
 class TestPriceHistoryModel:
